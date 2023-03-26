@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Search</title>
+</head>
+<body>
+    <h1>Music Search</h1>
+    <input type="text" id="search" placeholder="Search for a song...">
+    <button onclick="searchMusic()">Search</button>
+    <ul id="results"></ul>
+
+    <script>
+        const searchMusic = async () => {
+            const query = document.getElementById('search').value;
+            if (!query) return;
+
+            const apiUrl = `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(query)}&fmt=json`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                displayResults(data.recordings);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        const displayResults = (recordings) => {
+            const resultsList = document.getElementById('results');
+            resultsList.innerHTML = '';
+
+            if (!recordings || recordings.length === 0) {
+                resultsList.innerHTML = '<li>No results found</li>';
+                return;
+            }
+
+            for (const recording of recordings) {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${recording.title} by ${recording['artist-credit'][0].name}`;
+                resultsList.appendChild(listItem);
+            }
+        };
+    </script>
+</body>
+</html>
