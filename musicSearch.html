@@ -149,24 +149,6 @@
 
 
 
-
-        const filterUnique = (recordings) => {
-            const uniqueRecordings = [];
-            const seen = new Set();
-
-            for (const recording of recordings) {
-                const artistName = recording['artist-credit'][0].name;
-                const key = `${recording.title}-${artistName}`.toLowerCase();
-
-                if (!seen.has(key)) {
-                    uniqueRecordings.push(recording);
-                    seen.add(key);
-                }
-            }
-
-            return uniqueRecordings;
-        };
-
         const handleCheckboxChange = (event) => {
             const row = event.target.closest('tr');
             const recordingId = event.target.value;
