@@ -9,12 +9,16 @@
 <body>
     <h1>Music Search</h1>
     <input type="text" id="search" class="search-box" placeholder="Search for a song..." onkeydown="handleKeyPress(event)">
+    <br><br>
     <button onclick="searchMusic()">Search</button>
+    <button id="listSaved" onclick="listSavedSongs()">List Saved Songs</button>
+    <br> <br>
     <div id="spinner" class="spinner" style="display: none;"></div>
     <table id="results" style="display: none;">
         <thead>
             <tr>
-                <th>Select</th>
+                <th>Save</th>
+                <th>Marked</th>
                 <th>Song Name</th>
                 <th>Artist</th>
             </tr>
@@ -61,22 +65,27 @@
         };
 
     const displayResults = (recordings) => {
-        const resultsTable = document.getElementById('results').getElementsByTagName('tbody')[0];
-        resultsTable.innerHTML = '';
+        const resultsTable = document.getElementById('results');
+        resultsTable.innerHTML = `<thead>
+            <tr>
+                <th>Save</th>
+                <th>Marked</th>
+                <th>Song Name</th>
+                <th>Artist</th>
+            </tr>
+        </thead>`;
 
-        if (!recordings || recordings.length === 0) {
-            const row = resultsTable.insertRow();
-            const cell = row.insertCell();
-            cell.colSpan = 3;
-            cell.textContent = 'No results found';
-            return;
-        }
-
-        const uniqueRecordings = filterUnique(recordings);
-        const sortedRecordings = uniqueRecordings.sort((a, b) => (b.rating ? b.rating.value : 0) - (a.rating ? a.rating.value : 0));
         const selectedSongs = getSelectedSongs();
+        const uniqueKeys = new Set();
 
-        for (const recording of sortedRecordings) {
+        for (const recording of recordings) {
+            const songKey = `${recording.title}-${recording['artist-credit'][0].name}`.toLowerCase();
+
+            if (uniqueKeys.has(songKey)) {
+                continue;
+            }
+            uniqueKeys.add(songKey);
+
             const row = resultsTable.insertRow();
 
             const checkboxCell = row.insertCell();
@@ -87,20 +96,29 @@
             checkbox.addEventListener('change', handleCheckboxChange);
             checkboxCell.appendChild(checkbox);
 
-            const songNameCell = row.insertCell();
-            songNameCell.textContent = recording.title;
+            const markedCheckboxCell = row.insertCell();
+            const markedCheckbox = document.createElement('input');
+            markedCheckbox.type = 'checkbox';
+            markedCheckbox.name = 'marked';
+            markedCheckbox.value = recording.id;
+            markedCheckbox.addEventListener('change', handleCheckboxChange);
 
-            const artistNameCell = row.insertCell();
-            artistNameCell.textContent = recording['artist-credit'][0].name;
+            row.insertCell().textContent = recording.title;
+            row.insertCell().textContent = recording['artist-credit'][0].name;
 
-            const songKey = `${recording.title}-${recording['artist-credit'][0].name}`.toLowerCase();
-
-            if (selectedSongs.has(songKey)) {
+            if (selectedSongs.selected.has(songKey)) {
                 row.classList.add('selected');
                 checkbox.checked = true;
+                markedCheckboxCell.appendChild(markedCheckbox);
+
+                if (selectedSongs.marked.has(songKey)) {
+                    row.classList.add('marked');
+                    markedCheckbox.checked = true;
+                }
             }
         }
     };
+
 
 
 
@@ -129,20 +147,34 @@
             const key = `${recordingTitle}-${artistName}`.toLowerCase();
             const selectedSongs = getSelectedSongs();
 
-            if (event.target.checked) {
-                row.classList.add('selected');
-                selectedSongs.add(key);
-            } else {
-                row.classList.remove('selected');
-                selectedSongs.delete(key);
+            if (event.target.name === 'selected') {
+                if (event.target.checked) {
+                    row.classList.add('selected');
+                    selectedSongs.selected.add(key);
+                } else {
+                    row.classList.remove('selected');
+                    selectedSongs.selected.delete(key);
+                }
+                localStorage.setItem('selectedSongs', JSON.stringify(Array.from(selectedSongs.selected)));
+            } else if (event.target.name === 'marked') {
+                if (event.target.checked) {
+                    row.classList.add('marked');
+                    selectedSongs.marked.add(key);
+                } else {
+                    row.classList.remove('marked');
+                    selectedSongs.marked.delete(key);
+                }
+                localStorage.setItem('markedSongs', JSON.stringify(Array.from(selectedSongs.marked)));
             }
-
-            localStorage.setItem('selectedSongs', JSON.stringify(Array.from(selectedSongs)));
         };
 
         const getSelectedSongs = () => {
             const selectedSongsJson = localStorage.getItem('selectedSongs');
-            return selectedSongsJson ? new Set(JSON.parse(selectedSongsJson)) : new Set();
+            const markedSongsJson = localStorage.getItem('markedSongs');
+            return {
+                selected: selectedSongsJson ? new Set(JSON.parse(selectedSongsJson)) : new Set(),
+                marked: markedSongsJson ? new Set(JSON.parse(markedSongsJson)) : new Set(),
+            };
         };
 
         const addSelectedSong = (songId) => {
@@ -156,6 +188,22 @@
             selectedSongs.delete(songId);
             localStorage.setItem(STORAGE_KEY, Array.from(selectedSongs).join(','));
         };
+    
+    const listSavedSongs = () => {
+        const selectedSongs = getSelectedSongs();
+        const savedSongsArray = Array.from(selectedSongs.selected).map((key) => {
+            const [songTitle, artistName] = key.split('-');
+            const isMarked = selectedSongs.marked.has(key);
+            return {
+                title: songTitle,
+                'artist-credit': [{ name: artistName }],
+                isMarked,
+            };
+        });
+        setLoading(false)
+        displayResults(savedSongsArray);
+    };
+
 
     </script>
 </body>

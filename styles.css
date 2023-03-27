@@ -8,7 +8,7 @@ th, td {
     text-align: left;
 }
 .search-box {
-    width: 100%;
+    width: 80%;
     font-size: 18px;
     padding: 10px;
 }
@@ -24,6 +24,10 @@ th, td {
 
 .selected {
     background-color: #90ee90; /* Light green color */
+}
+
+.marked {
+    background-color: #ffa500; /* Orange color */
 }
 
 @keyframes spin {
