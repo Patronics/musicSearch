@@ -24,7 +24,7 @@
     </table>
 
     <script>
-        const COOKIE_NAME = 'selectedSongs';
+        const STORAGE_KEY = 'selectedSongs';
 
         const handleKeyPress = (event) => {
             if (event.key === 'Enter') {
@@ -55,44 +55,46 @@
             }
         };
 
-        const displayResults = (recordings) => {
-            const resultsTable = document.getElementById('results').getElementsByTagName('tbody')[0];
-            resultsTable.innerHTML = '';
+    const displayResults = (recordings) => {
+        const resultsTable = document.getElementById('results').getElementsByTagName('tbody')[0];
+        resultsTable.innerHTML = '';
 
-            if (!recordings || recordings.length === 0) {
-                const row = resultsTable.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 3;
-                cell.textContent = 'No results found';
-                return;
+        if (!recordings || recordings.length === 0) {
+            const row = resultsTable.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 3;
+            cell.textContent = 'No results found';
+            return;
+        }
+
+        const uniqueRecordings = filterUnique(recordings);
+        const selectedSongs = getSelectedSongs();
+
+        for (const recording of uniqueRecordings) {
+            const row = resultsTable.insertRow();
+
+            const checkboxCell = row.insertCell();
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'selected';
+            checkbox.value = recording.id;
+            checkbox.checked = selectedSongs.has(recording.id);
+            checkbox.addEventListener('change', handleCheckboxChange);
+            checkboxCell.appendChild(checkbox);
+
+            const songNameCell = row.insertCell();
+            songNameCell.textContent = recording.title;
+
+            const artistNameCell = row.insertCell();
+            artistNameCell.textContent = recording['artist-credit'][0].name;
+
+            if (selectedSongs.has(recording.id)) {
+                row.classList.add('selected');
+                checkbox.checked = true; // Added this line to properly set the checked attribute
             }
+        }
+    };
 
-            const uniqueRecordings = filterUnique(recordings);
-            const selectedSongs = getSelectedSongs();
-
-            for (const recording of uniqueRecordings) {
-                const row = resultsTable.insertRow();
-
-                const checkboxCell = row.insertCell();
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.name = 'selected';
-                checkbox.value = recording.id;
-                checkbox.checked = selectedSongs.has(recording.id);
-                checkbox.addEventListener('change', handleCheckboxChange);
-                checkboxCell.appendChild(checkbox);
-
-                const songNameCell = row.insertCell();
-                songNameCell.textContent = recording.title;
-
-                const artistNameCell = row.insertCell();
-                artistNameCell.textContent = recording['artist-credit'][0].name;
-
-                if (selectedSongs.has(recording.id)) {
-                    row.classList.add('selected');
-                }
-            }
-        };
 
         const filterUnique = (recordings) => {
             const seen = new Set();
@@ -120,45 +122,22 @@
         };
 
         const getSelectedSongs = () => {
-            const cookieValue = getCookie(COOKIE_NAME);
-            return new Set(cookieValue ? cookieValue.split(',') : []);
+            const storedValue = localStorage.getItem(STORAGE_KEY);
+            return new Set(storedValue ? storedValue.split(',') : []);
         };
 
         const addSelectedSong = (songId) => {
             const selectedSongs = getSelectedSongs();
             selectedSongs.add(songId);
-            setCookie(COOKIE_NAME, Array.from(selectedSongs).join(','), 30);
+            localStorage.setItem(STORAGE_KEY, Array.from(selectedSongs).join(','));
         };
 
         const removeSelectedSong = (songId) => {
             const selectedSongs = getSelectedSongs();
             selectedSongs.delete(songId);
-            setCookie(COOKIE_NAME, Array.from(selectedSongs).join(','), 30);
+            localStorage.setItem(STORAGE_KEY, Array.from(selectedSongs).join(','));
         };
 
-        const setCookie = (name, value, days) => {
-            const d = new Date();
-            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-            const expires = "expires=" + d.toUTCString();
-            document.cookie = name + "=" + value + ";" + expires + ";path=/";
-        };
-
-        const getCookie = (name) => {
-            const nameEQ = name + "=";
-            const decodedCookie = decodeURIComponent(document.cookie);
-            const ca = decodedCookie.split(';');
-
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) === ' ') {
-                    c = c.substring(1);
-                }
-                if (c.indexOf(nameEQ) === 0) {
-                    return c.substring(nameEQ.length, c.length);
-                }
-            }
-            return "";
-        };
     </script>
 </body>
 </html>
