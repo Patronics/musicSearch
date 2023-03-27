@@ -41,7 +41,12 @@
             const query = document.getElementById('search').value;
             if (!query) return;
 
-            const apiUrl = `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(query)}&fmt=json`;
+            const [songName, artistName] = query.split(' - ').map((part) => part.trim());
+            const searchQuery = artistName
+                ? `recording:${encodeURIComponent(songName)} AND artist:${encodeURIComponent(artistName)}`
+                : `recording:${encodeURIComponent(songName)}`;
+
+            const apiUrl = `https://musicbrainz.org/ws/2/recording?query=${searchQuery}&fmt=json&inc=ratings`;
 
             setLoading(true);
             try {
@@ -68,6 +73,7 @@
         }
 
         const uniqueRecordings = filterUnique(recordings);
+        const sortedRecordings = uniqueRecordings.sort((a, b) => (b.rating ? b.rating.value : 0) - (a.rating ? a.rating.value : 0));
         const selectedSongs = getSelectedSongs();
 
         for (const recording of uniqueRecordings) {
