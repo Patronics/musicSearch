@@ -7,11 +7,12 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Music Search</h1>
+    <h1>Patronics Music Search</h1>
     <input type="text" id="search" class="search-box" placeholder="Search for a song..." onkeydown="handleKeyPress(event)">
     <br><br>
     <button onclick="searchMusic()">Search</button>
     <button id="listSaved" onclick="listSavedSongs()">List Saved Songs</button>
+    <button id="saveSearch" onclick="saveSearchAsEntry()">Save Search (no matches)</button>
     <br> <br>
     <div id="spinner" class="spinner" style="display: none;"></div>
     <table id="results" style="display: none;">
@@ -26,7 +27,6 @@
         <tbody>
         </tbody>
     </table>
-
     <script>
         const STORAGE_KEY = 'selectedSongs';
 
@@ -63,6 +63,17 @@
                 setLoading(false);
             }
         };
+        
+    const saveSearchAsEntry = () => {
+        const query = document.getElementById('search').value;
+        if (!query) return;
+        const [songName, artistName] = query.split('-').map((part) => part.trim());
+        const songKey = `${songName}-${artistName}`.toLowerCase();
+        const selectedSongs = getSelectedSongs();
+        selectedSongs.selected.add(songKey);
+        localStorage.setItem('selectedSongs', JSON.stringify(Array.from(selectedSongs.selected)));
+        
+    };
         
     const toggleCheckbox = (checkbox) => {
         checkbox.checked = !checkbox.checked;
