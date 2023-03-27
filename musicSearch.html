@@ -41,7 +41,7 @@
             const query = document.getElementById('search').value;
             if (!query) return;
 
-            const [songName, artistName] = query.split(' - ').map((part) => part.trim());
+            const [songName, artistName] = query.split('-').map((part) => part.trim());
             const searchQuery = artistName
                 ? `recording:${encodeURIComponent(songName)} AND artist:${encodeURIComponent(artistName)}`
                 : `recording:${encodeURIComponent(songName)}`;
@@ -76,7 +76,7 @@
         const sortedRecordings = uniqueRecordings.sort((a, b) => (b.rating ? b.rating.value : 0) - (a.rating ? a.rating.value : 0));
         const selectedSongs = getSelectedSongs();
 
-        for (const recording of uniqueRecordings) {
+        for (const recording of sortedRecordings) {
             const row = resultsTable.insertRow();
 
             const checkboxCell = row.insertCell();
@@ -84,7 +84,6 @@
             checkbox.type = 'checkbox';
             checkbox.name = 'selected';
             checkbox.value = recording.id;
-            checkbox.checked = selectedSongs.has(recording.id);
             checkbox.addEventListener('change', handleCheckboxChange);
             checkboxCell.appendChild(checkbox);
 
@@ -94,42 +93,56 @@
             const artistNameCell = row.insertCell();
             artistNameCell.textContent = recording['artist-credit'][0].name;
 
-            if (selectedSongs.has(recording.id)) {
+            const songKey = `${recording.title}-${recording['artist-credit'][0].name}`.toLowerCase();
+
+            if (selectedSongs.has(songKey)) {
                 row.classList.add('selected');
-                checkbox.checked = true; // Added this line to properly set the checked attribute
+                checkbox.checked = true;
             }
         }
     };
 
 
+
         const filterUnique = (recordings) => {
+            const uniqueRecordings = [];
             const seen = new Set();
-            return recordings.filter((recording) => {
-                const key = `${recording.title.toLowerCase()}-${recording['artist-credit'][0].name.toLowerCase()}`;
+
+            for (const recording of recordings) {
+                const artistName = recording['artist-credit'][0].name;
+                const key = `${recording.title}-${artistName}`.toLowerCase();
+
                 if (!seen.has(key)) {
+                    uniqueRecordings.push(recording);
                     seen.add(key);
-                    return true;
                 }
-                return false;
-            });
+            }
+
+            return uniqueRecordings;
         };
 
         const handleCheckboxChange = (event) => {
-            const checkbox = event.target;
-            const row = checkbox.closest('tr');
+            const row = event.target.closest('tr');
+            const recordingId = event.target.value;
+            const recordingTitle = row.cells[1].textContent;
+            const artistName = row.cells[2].textContent;
+            const key = `${recordingTitle}-${artistName}`.toLowerCase();
+            const selectedSongs = getSelectedSongs();
 
-            if (checkbox.checked) {
+            if (event.target.checked) {
                 row.classList.add('selected');
-                addSelectedSong(checkbox.value);
+                selectedSongs.add(key);
             } else {
                 row.classList.remove('selected');
-                removeSelectedSong(checkbox.value);
+                selectedSongs.delete(key);
             }
+
+            localStorage.setItem('selectedSongs', JSON.stringify(Array.from(selectedSongs)));
         };
 
         const getSelectedSongs = () => {
-            const storedValue = localStorage.getItem(STORAGE_KEY);
-            return new Set(storedValue ? storedValue.split(',') : []);
+            const selectedSongsJson = localStorage.getItem('selectedSongs');
+            return selectedSongsJson ? new Set(JSON.parse(selectedSongsJson)) : new Set();
         };
 
         const addSelectedSong = (songId) => {

@@ -22,6 +22,10 @@ th, td {
     margin: 20px auto;
 }
 
+.selected {
+    background-color: #90ee90; /* Light green color */
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
