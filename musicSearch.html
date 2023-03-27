@@ -168,9 +168,19 @@
                 if (event.target.checked) {
                     row.classList.add('selected');
                     selectedSongs.selected.add(key);
+                    //add mark checkbox right away
+                    const markedCheckbox = document.createElement('input');
+                    markedCheckbox.type = 'checkbox';
+                    markedCheckbox.name = 'marked';
+                    markedCheckbox.value = recordingId;
+                    markedCheckbox.addEventListener('change', handleCheckboxChange);
+                    row.cells[1].appendChild(markedCheckbox)
                 } else {
                     row.classList.remove('selected');
                     selectedSongs.selected.delete(key);
+                    //remove item from marked list as well as selected
+                    selectedSongs.marked.delete(key);
+                    localStorage.setItem('markedSongs', JSON.stringify(Array.from(selectedSongs.marked)));
                 }
                 localStorage.setItem('selectedSongs', JSON.stringify(Array.from(selectedSongs.selected)));
             } else if (event.target.name === 'marked') {
