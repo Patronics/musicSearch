@@ -7,6 +7,15 @@ th, td {
     padding: 8px;
     text-align: left;
 }
+
+th.savedCol {
+    width: 200px;
+}
+
+th.markCol {
+    width: 100px;
+}
+
 .search-box {
     width: 80%;
     font-size: 18px;

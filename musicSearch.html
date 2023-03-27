@@ -17,10 +17,10 @@
     <table id="results" style="display: none;">
         <thead>
             <tr>
-                <th>Save</th>
-                <th>Marked</th>
-                <th>Song Name</th>
-                <th>Artist</th>
+                <th class="saveCol">Save</th>
+                <th class="markCol">Mark</th>
+                <th class="nameCol">Song Name</th>
+                <th class="artistCol">Artist</th>
             </tr>
         </thead>
         <tbody>
@@ -63,17 +63,24 @@
                 setLoading(false);
             }
         };
+        
+    const toggleCheckbox = (checkbox) => {
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
+    };
 
     const displayResults = (recordings) => {
         const resultsTable = document.getElementById('results');
-        resultsTable.innerHTML = `<thead>
-            <tr>
-                <th>Save</th>
-                <th>Marked</th>
-                <th>Song Name</th>
-                <th>Artist</th>
-            </tr>
-        </thead>`;
+        resultsTable.innerHTML = `
+            <thead>
+                <tr>
+                    <th class="saveCol">Save</th>
+                    <th class="markCol">Mark</th>
+                    <th class="nameCol">Song Name</th>
+                    <th class="artistCol">Artist</th>
+                </tr>
+            </thead>
+        `;
 
         const selectedSongs = getSelectedSongs();
         const uniqueKeys = new Set();
@@ -95,6 +102,11 @@
             checkbox.value = recording.id;
             checkbox.addEventListener('change', handleCheckboxChange);
             checkboxCell.appendChild(checkbox);
+            checkboxCell.addEventListener('click', (event) => {
+                if (event.target !== checkbox) {
+                    toggleCheckbox(checkbox);
+                }
+            });
 
             const markedCheckboxCell = row.insertCell();
             const markedCheckbox = document.createElement('input');
@@ -110,6 +122,11 @@
                 row.classList.add('selected');
                 checkbox.checked = true;
                 markedCheckboxCell.appendChild(markedCheckbox);
+                markedCheckboxCell.addEventListener('click', (event) => {
+                    if (event.target !== markedCheckbox) {
+                        toggleCheckbox(markedCheckbox);
+                    }
+                });
 
                 if (selectedSongs.marked.has(songKey)) {
                     row.classList.add('marked');
