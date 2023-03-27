@@ -142,8 +142,8 @@
         const handleCheckboxChange = (event) => {
             const row = event.target.closest('tr');
             const recordingId = event.target.value;
-            const recordingTitle = row.cells[1].textContent;
-            const artistName = row.cells[2].textContent;
+            const recordingTitle = row.cells[2].textContent;
+            const artistName = row.cells[3].textContent;
             const key = `${recordingTitle}-${artistName}`.toLowerCase();
             const selectedSongs = getSelectedSongs();
 
