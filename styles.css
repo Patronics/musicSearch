@@ -43,3 +43,21 @@ th.markCol {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+body.darkMode {
+    background-color: #000000;
+    color: #FFFFFF;
+
+}
+
+.darkMode th, td {
+    border: 1px solid #DDDDDD;
+}
+
+.darkMode .selected {
+    background-color: #60aa60; /* green color */
+}
+
+.darkMode .marked {
+    background-color: #AE5622; /* dark Orange color */
+}

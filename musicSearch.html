@@ -27,6 +27,8 @@
         <tbody>
         </tbody>
     </table>
+    <br><br>
+    <button id="toggleDarkMode" onclick="toggleDarkMode()">Toggle Dark Mode</button>
     <script>
         const STORAGE_KEY = 'selectedSongs';
 
@@ -223,7 +225,24 @@
         setLoading(false)
         displayResults(savedSongsArray);
     };
-
+    
+    const toggleDarkMode = () => {
+        if(document.body.classList.contains("darkMode")){
+            document.body.classList.remove("darkMode")
+            localStorage.setItem("darkMode", "light")
+        } else {
+            document.body.classList.add("darkMode")
+            localStorage.setItem("darkMode", "dark")
+        }
+        
+    }
+    
+    window.onload = () => {
+        if(localStorage.getItem("darkMode") == "dark"){
+            document.body.classList.add("darkMode");
+        }
+    }
+    
 
     </script>
 </body>
